@@ -1,0 +1,720 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Il Treno di Amerigo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Hanken+Grotesk:wght@400;600;700&family=Special+Elite&display=swap">
+<style>
+/* Layout: un solo palco. Dietro, la scena illustrata del luogo in cui si trova Amerigo con riflettori in alto; sopra, la ruota delle categorie e poi la schermata da quiz televisivo (domanda grande, risposte A-D). */
+:root{
+  --bg:#081238;
+  --panel:rgba(8,20,66,.84);
+  --panel-2:rgba(24,48,128,.72);
+  --line:#34509f;
+  --fg:#f3f7ff;
+  --dim:#a7bbea;
+  --gold:#f2c75c;
+  --amber:#ffb41f;
+  --amber-ink:#2a1a00;
+  --pill-a:#3cbcf2;
+  --pill-b:#1d90d2;
+  --pill-ink:#071d4d;
+  --ok:#3fcf8e;
+  --bad:#f0584a;
+  --signal:#e8503f;
+  --blue:#7cb8ff;
+  --font-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --font-body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-stamp:"Special Elite","Courier New",monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:17px;line-height:1.5;
+  padding-block:18px 40px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+/* scena di sfondo */
+#scene{position:fixed;inset:0;z-index:0;overflow:hidden;background:var(--bg)}
+.sc{position:absolute;inset:0;opacity:0;transition:opacity .9s ease}
+.sc.on{opacity:1}
+.sc svg{width:100%;height:100%;display:block}
+.veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,18,62,.5) 0%,rgba(8,18,62,.7) 50%,rgba(8,18,62,.9) 100%)}
+.spot{position:absolute;top:0;width:24%;height:60%;background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,0));clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);filter:blur(5px);opacity:.55}
+.spot:nth-of-type(1){left:6%}.spot:nth-of-type(2){left:38%}.spot:nth-of-type(3){left:70%}
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px;min-width:0}
+
+/* testata */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--font-display);font-weight:800;font-size:1.8rem;letter-spacing:.04em;text-transform:uppercase;line-height:1}
+.brand small{display:block;font-family:var(--font-stamp);font-weight:400;font-size:.76rem;letter-spacing:.06em;color:var(--dim);margin-top:5px;text-transform:none}
+.hud{display:flex;gap:10px;align-items:center}
+.score{font-family:var(--font-display);font-weight:800;font-size:1.7rem;letter-spacing:.05em;color:var(--gold);font-variant-numeric:tabular-nums;min-width:4.5ch;text-align:right}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 14px;font-size:.85rem;color:var(--dim)}
+.chip[aria-pressed="true"]{color:var(--fg);border-color:var(--gold)}
+
+/* palco */
+.stage{display:flex;flex-direction:column;gap:18px;min-width:0;min-height:430px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}
+.stamp{font-family:var(--font-stamp);font-size:.85rem;letter-spacing:.06em;color:var(--dim);text-transform:uppercase}
+h1,h2{font-family:var(--font-display);font-weight:800;text-transform:uppercase;letter-spacing:.02em;line-height:1.02;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.6rem,9vw,4.4rem)}
+h2{font-size:clamp(1.7rem,5.4vw,2.4rem)}
+p{margin:0;max-width:62ch}
+.btn{align-self:flex-start;background:var(--gold);color:var(--amber-ink);border:0;border-radius:999px;padding:13px 30px;font-family:var(--font-display);font-weight:800;font-size:1.3rem;letter-spacing:.08em;text-transform:uppercase}
+.btn:hover:not(:disabled){filter:brightness(1.08)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.status{text-align:center;font-family:var(--font-stamp);color:var(--gold);min-height:1.5em}
+.pts{font-family:var(--font-display);font-weight:800;font-size:1.2rem;letter-spacing:.06em;color:var(--gold)}
+
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.rules div{border-left:3px solid var(--gold);padding:2px 0 2px 12px;font-size:.92rem;color:var(--dim)}
+.rules strong{display:block;color:var(--fg);font-family:var(--font-display);font-size:1.55rem;font-weight:800;line-height:1.1}
+@media (max-width:560px){.rules{grid-template-columns:1fr}}
+
+/* ruota */
+.wheelview{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;align-items:center}
+.wheelbox{position:relative;padding-left:28px;width:min(94vw,396px);flex:none}
+.wheelbox svg{display:block;width:100%;height:auto;filter:drop-shadow(0 12px 22px rgba(0,0,0,.45))}
+.ptr{position:absolute;left:0;top:50%;margin-top:-20px;width:0;height:0;border-top:20px solid transparent;border-bottom:20px solid transparent;border-left:38px solid var(--gold);transform-origin:12% 50%;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))}
+.side{flex:1 1 250px;min-width:0;display:flex;flex-direction:column;gap:14px}
+.legend{display:grid;gap:8px;list-style:none;margin:0;padding:0}
+.legend li{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 12px;font-size:.95rem}
+.legend .dot{width:14px;height:14px;border-radius:50%;background:var(--bc);flex:none}
+.legend .nm{flex:1;min-width:0}
+.pips{display:flex;gap:4px}
+.pips i{display:block;width:10px;height:10px;border-radius:50%;border:2px solid var(--gold)}
+.pips i.on{background:var(--gold)}
+
+/* banner categoria */
+.banner{display:grid;place-items:center;align-content:center;gap:16px;min-height:360px;text-align:center}
+.banner h2{font-size:clamp(2.2rem,8.5vw,4.4rem);background:var(--bc);color:var(--ink);padding:14px 38px;border-radius:70px;border:4px solid var(--gold)}
+
+/* quiz in stile televisivo */
+.qhead{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.catchip{background:var(--bc);color:var(--ink);border-radius:999px;padding:5px 16px;font-family:var(--font-display);font-weight:800;letter-spacing:.07em;text-transform:uppercase;font-size:1.05rem}
+.timerbar{height:6px;background:rgba(255,255,255,.16);border-radius:4px;overflow:hidden}
+.timerbar i{display:block;height:100%;background:var(--gold);transform-origin:left}
+.qline{background:linear-gradient(var(--gold),var(--gold)) center/100% 2px no-repeat;padding:8px 0}
+.qpill{background:linear-gradient(180deg,var(--pill-a),var(--pill-b));color:var(--pill-ink);border:3px solid var(--gold);border-radius:56px;padding:22px 32px;text-align:center;font-weight:700;font-size:clamp(1.2rem,3.8vw,1.7rem);line-height:1.25;box-shadow:0 0 0 3px rgba(8,18,62,.55),0 12px 30px rgba(0,0,0,.4);min-height:112px;display:grid;place-items:center;text-wrap:balance}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:12px 22px;grid-auto-rows:62px;background:repeating-linear-gradient(to bottom,transparent 0 30px,var(--gold) 30px 32px,transparent 32px 74px)}
+@media (max-width:560px){.answers{grid-template-columns:1fr}}
+.ans{display:flex;align-items:center;gap:10px;height:62px;min-width:0;text-align:left;padding:0 18px;border:3px solid var(--gold);border-radius:34px;background:linear-gradient(180deg,var(--pill-a),var(--pill-b));color:var(--pill-ink);font-weight:700;font-size:.98rem;line-height:1.15;box-shadow:0 0 0 3px rgba(8,18,62,.55)}
+.ans b{font-family:var(--font-stamp);font-weight:400;font-size:1rem;color:#0b2a8a;flex:none}
+.ans span{min-width:0;overflow-wrap:anywhere}
+.ans:hover:not(:disabled){background:var(--gold)}
+.ans.right{background:linear-gradient(180deg,#5de6a6,#1fa56e);border-color:#d4ffe9}
+.ans.wrong{background:linear-gradient(180deg,#ff8a7c,#d8402f);border-color:#ffd8d3;color:#3a0700}
+.ans:disabled{cursor:default}
+.note{border-left:4px solid var(--blue);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0}
+.note.bad{border-color:var(--bad)}
+.note.good{border-color:var(--ok)}
+
+/* minigiochi bonus */
+canvas{width:100%;max-width:420px;height:auto;align-self:center;border-radius:12px;border:1px solid var(--line);background:#0a1647;touch-action:none;display:block}
+.minihud{display:flex;justify-content:space-between;font-family:var(--font-stamp);font-size:.9rem;color:var(--dim);flex-wrap:wrap;gap:8px}
+.minihud b{color:var(--gold);font-weight:400}
+.track{position:relative;height:84px;background:#0a1647;border:1px solid var(--line);border-radius:12px;overflow:hidden;touch-action:manipulation;cursor:pointer}
+.track::before{content:"";position:absolute;left:0;right:0;bottom:16px;height:4px;background:repeating-linear-gradient(90deg,#4a62b0 0 14px,transparent 14px 20px)}
+.track::after{content:"";position:absolute;left:0;right:0;bottom:12px;height:2px;background:#5a74c4}
+.zone{position:absolute;top:0;bottom:0;background:rgba(242,199,92,.18);border-left:2px solid var(--gold);border-right:2px solid var(--gold)}
+.zone::after{content:"BANCHINA";position:absolute;top:6px;left:0;right:0;text-align:center;font-family:var(--font-stamp);font-size:.65rem;color:var(--gold);letter-spacing:.1em;overflow:hidden}
+.loco{position:absolute;bottom:20px;height:34px;width:64px;background:var(--signal);border-radius:6px 14px 4px 4px}
+.loco::before{content:"";position:absolute;left:8px;top:6px;width:14px;height:10px;background:#0a1647;border-radius:2px;box-shadow:20px 0 0 #0a1647}
+.loco::after{content:"";position:absolute;left:8px;bottom:-6px;width:10px;height:10px;border-radius:50%;background:#f3f7ff;box-shadow:34px 0 0 #f3f7ff}
+.strings{display:grid;gap:10px}
+.string{position:relative;height:58px;border-radius:12px;border:1px solid var(--line);background:var(--panel-2);display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-family:var(--font-display);font-weight:800;font-size:1.6rem;letter-spacing:.06em;touch-action:manipulation;overflow:hidden}
+.string::before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:var(--c);opacity:.7}
+.string small{font-family:var(--font-stamp);font-weight:400;font-size:.75rem;color:var(--dim);position:relative;z-index:1}
+.string span{position:relative;z-index:1}
+.string.lit{background:var(--c);color:#0a1647}
+.string.lit::before{background:#0a1647}
+.string.lit small{color:#0a1647}
+.card{background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:26px 20px;font-family:var(--font-display);font-weight:600;font-size:clamp(1.5rem,5vw,2.1rem);line-height:1.15;min-height:130px;display:grid;place-items:center;text-align:center;text-wrap:balance}
+.card.right{border-color:var(--ok);background:rgba(63,207,142,.18)}
+.card.wrong{border-color:var(--bad);background:rgba(240,88,74,.18)}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.choices button{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:14px 8px;font-family:var(--font-display);font-weight:800;font-size:1.25rem;letter-spacing:.06em;text-transform:uppercase}
+.choices button:hover:not(:disabled){border-color:var(--gold)}
+.choices button:disabled{opacity:.6;cursor:default}
+
+/* finale */
+.rank{font-family:var(--font-display);font-weight:800;font-size:clamp(2.2rem,8vw,3.6rem);text-transform:uppercase;color:var(--gold);line-height:1}
+.big{font-family:var(--font-display);font-weight:800;font-size:clamp(3.2rem,12vw,5.5rem);line-height:1;font-variant-numeric:tabular-nums}
+.stats{display:flex;gap:26px;flex-wrap:wrap;color:var(--dim)}
+.stats b{display:block;color:var(--fg);font-family:var(--font-display);font-size:1.6rem;font-weight:800;line-height:1.1}
+.recap{display:grid;gap:8px}
+.recap div{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;font-size:.95rem}
+.recap .dot{width:14px;height:14px;border-radius:50%;background:var(--bc);flex:none}
+.recap .nm{flex:1;min-width:0}
+.recap .v{font-family:var(--font-stamp);color:var(--dim);font-size:.85rem;text-align:right}
+@media (max-width:560px){.recap .v{flex-basis:100%;text-align:left;padding-left:24px}}
+
+.credits{display:grid;gap:4px}
+.ctitle{font-family:var(--font-display);font-weight:800;font-size:clamp(1.8rem,6vw,2.6rem);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);line-height:1}
+.cby{font-size:.95rem;color:var(--fg)}
+.cby b{font-weight:600}
+.credits.end{border-top:1px solid var(--line);padding-top:16px}
+@media (prefers-reduced-motion:reduce){.sc{transition:none}}
+</style>
+
+<div id="scene" aria-hidden="true"><div class="veil"></div><div class="spot"></div><div class="spot"></div><div class="spot"></div></div>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Il Treno di Amerigo<small>Trivia quiz dal romanzo di Viola Ardone e dal film di Cristina Comencini</small></div>
+    <div class="hud">
+      <button class="chip" id="snd" aria-pressed="true" type="button">Suono: sì</button>
+      <div class="score" id="score" aria-live="polite">0</div>
+    </div>
+  </header>
+  <main class="stage" id="stage"></main>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* =====================================================================
+   DATI DEL QUIZ
+   Per aggiungere domande: inserisci un nuovo oggetto nell'elenco "qs" di una categoria.
+   Per aggiungere una categoria: inserisci un nuovo oggetto in CATS (la ruota si adatta da sola).
+   Campi domanda: q = testo, o = 4 risposte, a = indice di quella esatta (0-3),
+   n = spiegazione, luogo = sfondo (napoli, stazione, viaggio, modena).
+   ===================================================================== */
+var CATS=[
+ {id:"diff",name:"Differenze tra libro e film",short:"Libro / Film",color:"#d8402f",ink:"#ffffff",game:"cards",
+  qs:[
+   {q:"Nel romanzo di Viola Ardone, chi racconta la storia?",o:["Amerigo stesso, con la voce di un bambino","Sua madre Antonietta","Un narratore esterno che sa tutto","Derna, la madre che lo accoglie"],a:0,luogo:"napoli",
+    n:"Nel libro tutto passa dallo sguardo ingenuo di Amerigo. Nel film lo sguardo si allarga."},
+   {q:"Come si apre il film?",o:["Con Amerigo adulto, poi i ricordi in flashback","Con la partenza del treno da Napoli","Con la voce fuori campo di Antonietta","Con una scena di guerra"],a:0,luogo:"modena",
+    n:"Il film si apre con Amerigo ormai adulto. La sua vita torna poi attraverso i flashback."},
+   {q:"Come si può descrivere il tono del film rispetto a quello del libro?",o:["Più crudo e visivo: la sofferenza si vede","Più comico e leggero","Fantastico e pieno di magia","Identico, scena per scena"],a:0,luogo:"napoli",
+    n:"Il libro è delicato e tenero, filtrato dai giochi mentali di un bambino. Il film mostra la sofferenza in modo più diretto."},
+   {q:"Quale tema il film sviluppa in modo più esplicito, oltre al dopoguerra?",o:["Il significato dell’essere madre","La politica internazionale","La vita in fabbrica","Il rapporto con la scuola"],a:0,luogo:"stazione",
+    n:"Il film mette al centro le due madri, Antonietta e Derna, e il coraggio di lasciar andare chi si ama."},
+   {q:"Che cosa mostra il film in modo più diretto rispetto al libro?",o:["La miseria di Napoli e la magrezza dei bambini","Le battaglie della guerra","Il lavoro in miniera","La vita di una grande città del Nord"],a:0,luogo:"napoli",
+    n:"Nel libro la miseria resta spesso sullo sfondo, vista da un bambino. Nel film entra in primo piano."}
+  ]},
+ {id:"cur",name:"Curiosità sul film",short:"Curiosità",color:"#ff9a1f",ink:"#2a1500",game:"train",
+  qs:[
+   {q:"Quale dedica compare all’inizio e alla fine del film?",o:["A tutti i bambini e le mamme di tutte le guerre","A tutti i bambini del mondo","A chi parte e a chi resta","Alle madri di Napoli"],a:0,luogo:"stazione",
+    n:"“A tutti i bambini e le mamme di tutte le guerre”."},
+   {q:"Di cosa ha paura Amerigo quando si nasconde nel bosco vicino a Modena?",o:["Che la famiglia lo cucini nel forno","Dei lupi","Del temporale","Dei bombardamenti"],a:0,luogo:"modena",
+    n:"Una paura da bambino, nata dalle voci sentite prima di partire. Derna gli promette che potrà tornare a casa dopo il raccolto del grano."},
+   {q:"Che cosa succede alla stazione prima della partenza dei bambini?",o:["Un’anziana diffonde voci spaventose sul Nord","Il treno parte senza i bambini","Arriva la polizia a fermare tutto","Amerigo perde la madre nella folla"],a:0,luogo:"stazione",
+    n:"Gli attivisti comunisti devono convincere la folla a lasciar partire i bambini."},
+   {q:"Che cosa accade ad Amerigo durante la festa del Primo Maggio?",o:["Litiga con Lucio e scappa via","Suona il violino davanti a tutti","Torna a Napoli di nascosto","Vince una gara di corsa"],a:0,luogo:"modena",
+    n:"Dopo la lite con Lucio, Amerigo scappa e assiste a una scena che riguarda Derna."},
+   {q:"Chi cercano Amerigo e Lucio lungo i binari?",o:["Rossana, una bambina che ha nostalgia di casa","Il violino perduto di Alcide","La madre di Amerigo","Un cane smarrito"],a:0,luogo:"viaggio",
+    n:"Rossana è una dei bambini arrivati con il treno: ha nostalgia di casa ed è scappata."}
+  ]},
+ {id:"sto",name:"Realtà storica",short:"Storia",color:"#12855a",ink:"#ffffff",game:"shoes",
+  qs:[
+   {q:"In quali anni circolarono i treni della felicità?",o:["Dal 1945 al 1952","Dal 1939 al 1945","Dal 1950 al 1960","Dal 1920 al 1930"],a:0,luogo:"stazione",
+    n:"Dal 1945 al 1952, per portare i bambini poveri del Sud presso famiglie del Centro-Nord."},
+   {q:"Chi ideò l’iniziativa, insieme all’Unione Donne Italiane?",o:["Teresa Noce","Nilde Iotti","Maria Montessori","Anna Magnani"],a:0,luogo:"modena",
+    n:"Teresa Noce, dirigente comunista, che chiese ai compagni di Reggio Emilia di ospitare i bambini durante l’inverno."},
+   {q:"Circa quanti bambini viaggiarono in tutto?",o:["700","7.000","70.000","700.000"],a:2,luogo:"viaggio",
+    n:"Circa settantamila bambini, partiti da Lazio, Campania, Puglia, Calabria, Sicilia e Sardegna."},
+   {q:"Da dove a dove viaggiò il primo treno, il 16 dicembre 1945?",o:["Da Milano a Reggio Emilia","Da Napoli a Modena","Da Roma a Bologna","Da Torino a Parma"],a:0,luogo:"viaggio",
+    n:"Partì da Milano con 1.800 bambini diretti a Reggio Emilia."},
+   {q:"Quale voce spaventava le famiglie del Sud prima della partenza?",o:["Che i bambini sarebbero trasformati in sapone","Che il treno non sarebbe mai partito","Che sarebbero stati mandati in guerra","Che avrebbero dovuto pagare il viaggio"],a:0,luogo:"napoli",
+    n:"Una testimonianza riporta la voce che al Nord “i comunisti vi trasformano in sapone”."}
+  ]},
+ {id:"per",name:"Personaggi importanti",short:"Personaggi",color:"#6f47d1",ink:"#ffffff",game:"violin",
+  qs:[
+   {q:"Chi è Derna?",o:["Una ex partigiana che accoglie Amerigo a Modena","La madre di Amerigo","La maestra di Amerigo","Un’organizzatrice del treno a Napoli"],a:0,luogo:"modena",
+    n:"Derna è l’ultima a prendere con sé un bambino, ed è lei che accoglie Amerigo."},
+   {q:"Che ruolo ha Maddalena Criscuolo?",o:["Militante comunista che organizza la partenza","Zia di Amerigo","Insegnante di violino","Vicina di casa di Antonietta"],a:0,luogo:"napoli",
+    n:"È una giovane militante del Partito Comunista e organizza la partenza dei bambini."},
+   {q:"Chi fa scoprire il violino ad Amerigo a Modena?",o:["Alcide","Lucio","Tommasino","Maddalena"],a:0,luogo:"modena",
+    n:"Alcide, fratello di Derna nel film: gli insegna a suonare e gli fa scoprire la musica."},
+   {q:"Chi è Lucio e come si comporta all’inizio con Amerigo?",o:["Il figlio di Alcide, geloso di lui","Un amico napoletano di Amerigo","Il capo del treno, gentile","Il maestro di scuola, severo"],a:0,luogo:"modena",
+    n:"Lucio è figlio di Alcide e all’inizio è geloso delle attenzioni che il padre dà ad Amerigo."},
+   {q:"Come vive Antonietta, la madre di Amerigo, a Napoli?",o:["In povertà, con piccoli traffici per tirare avanti","In una grande casa con la servitù","In campagna, con un orto","In fabbrica, come operaia"],a:0,luogo:"napoli",
+    n:"Vive nei vicoli più poveri della città, tra espedienti e fame, e per Amerigo sogna un futuro migliore."}
+  ]}
+];
+var CARDS=[
+ {t:"Il racconto passa tutto dalla voce di Amerigo bambino.",a:0},
+ {t:"Il tono è delicato e tenero, filtrato dallo sguardo di un bambino.",a:0},
+ {t:"Si apre e si chiude con una dedica a tutti i bambini e le mamme di tutte le guerre.",a:1},
+ {t:"Mostra la miseria di Napoli in modo più diretto e visibile.",a:1},
+ {t:"Sviluppa una riflessione più esplicita su che cosa significa essere madre.",a:1},
+ {t:"La storia parte da Napoli, nel 1946.",a:2},
+ {t:"Si ispira ai treni della felicità.",a:2},
+ {t:"Amerigo scopre la passione per la musica.",a:2}
+];
+var CH=["Libro","Film","Tutti e due"];
+var QMAX=150,GMAX=300,QTIME=20000;
+var TOTALQ=CATS.reduce(function(a,c){return a+c.qs.length},0);
+var TOTALMAX=TOTALQ*QMAX+CATS.length*GMAX;
+
+/* ---------- utilità ---------- */
+var $=function(s,r){return (r||document).querySelector(s)};
+var stage=$("#stage");
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+var S,cleanup=null;
+function reset(){
+  S={score:0,correct:0,wheel:0,spinning:false,cur:0,
+     cat:CATS.map(function(c){return {asked:0,ok:0,bonus:null,order:shuffle(c.qs)}})};
+  setScore();
+}
+function setScore(){$("#score").textContent=S.score}
+function add(n){S.score+=n;setScore()}
+function clear(){if(cleanup){cleanup();cleanup=null}}
+function view(html,cls){
+  clear();stage.className="stage"+(cls?" "+cls:"");stage.innerHTML=html;
+  try{if(window.scrollY>40)window.scrollTo({top:0})}catch(e){}
+}
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+function catStyle(c){return "--bc:"+c.color+";--ink:"+c.ink}
+
+/* ---------- sfondi illustrati dei luoghi ---------- */
+function R(seed){var s=seed;return function(){s=s*16807%2147483647;return s/2147483647}}
+function sceneNapoli(){
+  var r=R(7),o="";
+  o+='<defs><linearGradient id="gN" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26397f"/><stop offset=".6" stop-color="#d9805a"/><stop offset="1" stop-color="#f2c07a"/></linearGradient></defs>';
+  o+='<rect width="1600" height="900" fill="url(#gN)"/>';
+  o+='<circle cx="820" cy="610" r="140" fill="#ffe0a8" opacity=".45"/>';
+  o+='<path d="M330 710L610 480L690 440L740 480L800 440L880 400L930 428L1280 710Z" fill="#4c3f75"/>';
+  o+='<g fill="#f3e6e0" opacity=".28"><circle cx="905" cy="372" r="26"/><circle cx="930" cy="330" r="34"/><circle cx="975" cy="282" r="42"/><circle cx="1040" cy="248" r="50"/></g>';
+  o+='<rect y="700" width="1600" height="70" fill="#2d4a8a" opacity=".9"/>';
+  function block(x,y,w,fill){
+    var b='<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+(900-y)+'" fill="'+fill+'"/>';
+    for(var wy=y+30;wy<760;wy+=72){for(var wx=x+22;wx<x+w-40;wx+=62){
+      var lit=r()>.55;
+      b+='<rect x="'+wx+'" y="'+wy+'" width="30" height="44" fill="'+(lit?"#ffd27a":"#2a1c2e")+'" opacity="'+(lit?.85:.7)+'"/>';
+    }}
+    return b;
+  }
+  o+=block(0,200,300,"#6a3340")+block(260,330,260,"#874f4a")+block(1080,300,260,"#874f4a")+block(1300,150,300,"#6a3340");
+  function line(y0,yc,y1,xs){
+    var s='<path d="M0 '+y0+'Q800 '+yc+' 1600 '+y1+'" stroke="#1d1220" stroke-width="3" fill="none"/>';
+    var cols=["#f3ecd8","#d8402f","#5fa8f5","#f2c75c","#e9f0eb"];
+    for(var x=xs;x<1560;x+=100){
+      var t=x/1600,y=(1-t)*(1-t)*y0+2*(1-t)*t*yc+t*t*y1;
+      s+='<rect x="'+(x-15)+'" y="'+(y+2)+'" width="30" height="'+(36+Math.floor(r()*18))+'" fill="'+cols[Math.floor(r()*cols.length)]+'" opacity=".92"/>';
+    }
+    return s;
+  }
+  o+=line(300,440,280,110)+line(420,520,400,160);
+  o+='<rect y="800" width="1600" height="100" fill="#33202c"/>';
+  for(var i=0;i<18;i++){o+='<path d="M'+(i*100-30)+' 900L'+(i*100+10)+' 800" stroke="#4a2f3d" stroke-width="3"/>'}
+  return o;
+}
+function sceneStazione(){
+  var o="";
+  o+='<defs><linearGradient id="gS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a2766"/><stop offset=".7" stop-color="#b8636a"/><stop offset="1" stop-color="#f0b27a"/></linearGradient></defs>';
+  o+='<rect width="1600" height="900" fill="url(#gS)"/>';
+  o+='<polygon points="100,290 800,160 1500,290" fill="#2f2030"/><rect x="100" y="288" width="1400" height="30" fill="#2f2030"/><rect x="130" y="318" width="1340" height="420" fill="#4a3344"/>';
+  o+='<circle cx="800" cy="232" r="46" fill="#f3ecd8" stroke="#2f2030" stroke-width="5"/><path d="M800 232V200M800 232L822 244" stroke="#2f2030" stroke-width="5" stroke-linecap="round"/>';
+  for(var i=0;i<7;i++){var x=185+i*190;o+='<path d="M'+x+' 738V520A45 45 0 0 1 '+(x+90)+' 520V738Z" fill="#ffcf7a" opacity=".9"/><path d="M'+(x+45)+' 475V738" stroke="#4a3344" stroke-width="5"/>'}
+  o+='<rect y="738" width="1600" height="48" fill="#2a2030"/><rect y="772" width="1600" height="6" fill="#e8c24a"/><rect y="786" width="1600" height="114" fill="#181420"/>';
+  o+='<rect y="822" width="1600" height="8" fill="#6a6f88"/>';
+  for(var k=0;k<32;k++){o+='<rect x="'+(k*52)+'" y="832" width="30" height="8" fill="#2c2536"/>'}
+  [330,720].forEach(function(x){o+='<rect x="'+x+'" y="470" width="8" height="270" fill="#14101c"/><circle cx="'+(x+4)+'" cy="468" r="30" fill="#ffd27a" opacity=".35"/><circle cx="'+(x+4)+'" cy="468" r="12" fill="#ffe6a8"/>'});
+  o+='<rect x="880" y="650" width="420" height="120" rx="22" fill="#1a1a24"/><rect x="1010" y="610" width="210" height="160" fill="#22222e"/><rect x="1040" y="640" width="64" height="52" fill="#ffcf7a"/><rect x="1236" y="590" width="38" height="66" fill="#14141c"/><rect x="1226" y="582" width="58" height="14" fill="#14141c"/><rect x="1300" y="720" width="70" height="40" fill="#14141c"/>';
+  [960,1080,1240].forEach(function(x){o+='<circle cx="'+x+'" cy="796" r="46" fill="#121218" stroke="#7a7a90" stroke-width="6"/><circle cx="'+x+'" cy="796" r="8" fill="#7a7a90"/>'});
+  o+='<g fill="#d8d0e6" opacity=".4"><circle cx="1255" cy="548" r="26"/><circle cx="1290" cy="496" r="36"/><circle cx="1345" cy="440" r="46"/><circle cx="1410" cy="388" r="54"/></g>';
+  return o;
+}
+function sceneViaggio(){
+  var o="",r=R(11);
+  o+='<defs><linearGradient id="gV" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f1a4d"/><stop offset=".55" stop-color="#4a4090"/><stop offset="1" stop-color="#f09a6a"/></linearGradient></defs>';
+  o+='<rect width="1600" height="900" fill="url(#gV)"/>';
+  o+='<circle cx="1180" cy="560" r="96" fill="#ffd9a0" opacity=".55"/>';
+  o+='<path d="M0 640C200 560 360 600 560 560S940 500 1160 560 1480 600 1600 540V900H0Z" fill="#3a4685"/>';
+  o+='<path d="M0 700C240 640 420 690 640 650S1040 610 1280 660 1500 690 1600 650V900H0Z" fill="#2a3470"/>';
+  o+='<path d="M0 770C260 730 520 770 800 740S1300 720 1600 760V900H0Z" fill="#1b2352"/>';
+  for(var x=120;x<1600;x+=260){
+    o+='<rect x="'+x+'" y="470" width="8" height="230" fill="#0e1330"/><rect x="'+(x-36)+'" y="486" width="80" height="6" fill="#0e1330"/>';
+  }
+  o+='<path d="M84 489Q250 540 380 489T640 489T900 489T1160 489T1420 489T1600 489" stroke="#0e1330" stroke-width="2" fill="none"/>';
+  var y=662;
+  for(var i=0;i<6;i++){
+    var wx=120+i*182;
+    o+='<rect x="'+wx+'" y="'+y+'" width="170" height="66" rx="6" fill="#1c1428"/>';
+    for(var w=0;w<3;w++){o+='<rect x="'+(wx+16+w*50)+'" y="'+(y+14)+'" width="32" height="26" fill="#ffcf7a" opacity="'+(r()>.2?.95:.35)+'"/>'}
+  }
+  o+='<rect x="1230" y="'+(y-4)+'" width="230" height="70" rx="14" fill="#14101c"/><rect x="1380" y="'+(y-36)+'" width="80" height="40" fill="#14101c"/><rect x="1400" y="'+(y-26)+'" width="36" height="22" fill="#ffcf7a"/><rect x="1260" y="'+(y-30)+'" width="30" height="40" fill="#14101c"/><circle cx="1470" cy="'+(y+34)+'" r="9" fill="#ffe6a8"/>';
+  o+='<g fill="#e9e1f0" opacity=".34"><circle cx="1250" cy="'+(y-48)+'" r="22"/><circle cx="1190" cy="'+(y-80)+'" r="30"/><circle cx="1110" cy="'+(y-108)+'" r="38"/><circle cx="1010" cy="'+(y-132)+'" r="46"/><circle cx="890" cy="'+(y-150)+'" r="52"/></g>';
+  o+='<rect y="728" width="1600" height="8" fill="#6a6f88"/><rect y="736" width="1600" height="164" fill="#121a40"/>';
+  return o;
+}
+function sceneModena(){
+  var o="";
+  o+='<defs><linearGradient id="gM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5aa6e8"/><stop offset="1" stop-color="#f6e6b8"/></linearGradient></defs>';
+  o+='<rect width="1600" height="900" fill="url(#gM)"/>';
+  o+='<circle cx="1260" cy="210" r="72" fill="#fff3c4"/>';
+  o+='<g fill="#ffffff" opacity=".7"><ellipse cx="300" cy="170" rx="140" ry="30"/><ellipse cx="420" cy="150" rx="90" ry="26"/><ellipse cx="900" cy="250" rx="160" ry="30"/><ellipse cx="1480" cy="360" rx="120" ry="24"/></g>';
+  o+='<path d="M0 560C260 500 520 540 800 520S1300 490 1600 530V900H0Z" fill="#9bb58a"/>';
+  o+='<rect x="236" y="560" width="250" height="44" fill="#cdb48f"/><rect x="330" y="340" width="62" height="240" fill="#d9c2a0"/><rect x="322" y="310" width="78" height="36" fill="#cdb48f"/><polygon points="322,312 400,312 361,196" fill="#b8996e"/><rect x="359" y="168" width="4" height="34" fill="#b8996e"/>';
+  [380,430,480].forEach(function(y){o+='<path d="M346 '+(y+30)+'V'+(y+8)+'A15 15 0 0 1 376 '+(y+8)+'V'+(y+30)+'Z" fill="#6a5238"/>'});
+  o+='<path d="M0 600C300 560 600 610 900 590S1350 570 1600 600V900H0Z" fill="#e0b23c"/>';
+  o+='<path d="M0 680C320 640 640 700 960 670S1400 650 1600 690V900H0Z" fill="#d09a2e"/>';
+  o+='<path d="M0 780C300 740 700 800 1000 770S1400 750 1600 790V900H0Z" fill="#b8801f"/>';
+  for(var i=0;i<14;i++){o+='<path d="M'+(i*120-60)+' 900L'+(780+(i-7)*34)+' 700" stroke="#8a5e14" stroke-width="3" opacity=".35"/>'}
+  o+='<rect x="1000" y="590" width="210" height="110" fill="#f1e6d0"/><polygon points="984,592 1226,592 1105,516" fill="#a8452f"/><rect x="1160" y="500" width="26" height="54" fill="#8a3a28"/><rect x="1086" y="634" width="36" height="66" fill="#6a4a30"/><rect x="1030" y="624" width="34" height="34" fill="#5b7fa8"/><rect x="1150" y="624" width="34" height="34" fill="#5b7fa8"/>';
+  o+='<g fill="#ffffff" opacity=".6"><circle cx="1176" cy="480" r="14"/><circle cx="1196" cy="450" r="20"/><circle cx="1226" cy="414" r="26"/></g>';
+  [820,872,924].forEach(function(x,i){o+='<ellipse cx="'+x+'" cy="'+(590-i*8)+'" rx="16" ry="'+(80+i*6)+'" fill="#35592f"/><rect x="'+(x-3)+'" y="'+(640-i*8)+'" width="6" height="40" fill="#4a3a28"/>'});
+  return o;
+}
+var SCENES={napoli:sceneNapoli,stazione:sceneStazione,viaggio:sceneViaggio,modena:sceneModena};
+(function(){
+  var host=$("#scene"),veil=$(".veil");
+  Object.keys(SCENES).forEach(function(k){
+    var d=document.createElement("div");d.className="sc";d.dataset.s=k;
+    d.innerHTML='<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'+SCENES[k]()+'</svg>';
+    host.insertBefore(d,veil);
+  });
+})();
+function setScene(k){document.querySelectorAll(".sc").forEach(function(e){e.classList.toggle("on",e.dataset.s===k)})}
+
+/* ---------- suono ---------- */
+var AC=null,soundOn=true;
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}
+  if(AC&&AC.state==="suspended"){try{AC.resume()}catch(e){}}return AC}
+function tone(f,d,type,vol,when){
+  if(!soundOn)return;var c=ac();if(!c)return;
+  try{
+    var t=c.currentTime+(when||0),o=c.createOscillator(),g=c.createGain(),lp=c.createBiquadFilter();
+    o.type=type||"sine";o.frequency.value=f;lp.type="lowpass";lp.frequency.value=2600;
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol||.12,t+.03);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    o.connect(lp);lp.connect(g);g.connect(c.destination);o.start(t);o.stop(t+d+.05);
+  }catch(e){}
+}
+function sfxOk(){tone(660,.14,"triangle",.1);tone(990,.22,"triangle",.1,.1)}
+function sfxBad(){tone(170,.3,"sawtooth",.07)}
+function sfxTick(){tone(900,.04,"square",.035)}
+$("#snd").addEventListener("click",function(){
+  soundOn=!soundOn;this.setAttribute("aria-pressed",String(soundOn));this.textContent="Suono: "+(soundOn?"sì":"no");if(soundOn)ac();
+});
+
+/* ---------- schermate ---------- */
+function credits(cls){
+  return '<div class="credits'+(cls?' '+cls:'')+'"><div class="ctitle">Trivia quiz</div><div class="cby">Fatto da: <b>Daniel Campana</b>, <b>Giulio Ottaviani</b>, <b>Carlo Alberto Romito</b></div></div>';
+}
+function allDone(){return S.cat.every(function(c){return c.bonus!==null})}
+
+function showIntro(){
+  reset();setScene("stazione");
+  var best=store("treno-amerigo-best");
+  view(credits()+'<div class="stamp">Dal romanzo al film</div>'+
+   '<h1>Gira la ruota, sali sul treno di Amerigo</h1>'+
+   '<p>Ogni giro sceglie una categoria e una domanda. Rispondi, completa tutte le categorie e conquista un minigioco bonus per ognuna. Nessuno spoiler sul finale.</p>'+
+   '<div class="rules"><div><strong>'+CATS.length+' categorie</strong>libro e film, curiosità, storia, personaggi</div><div><strong>'+CATS[0].qs.length+' domande</strong>per categoria, '+TOTALQ+' in tutto</div><div><strong>'+CATS.length+' bonus</strong>un minigioco a categoria completata</div></div>'+
+   '<div class="row"><button class="btn" id="go" type="button">Parti</button></div>'+
+   (best?'<div class="stamp">Il tuo record: '+esc(best)+' punti</div>':''),"panel");
+  $("#go").onclick=function(){ac();showWheel()};
+}
+
+/* ----- ruota ----- */
+function P(a,r){var t=a*Math.PI/180;return [r*Math.sin(t),-r*Math.cos(t)]}
+function wheelSVG(){
+  var M=CATS.length,seg=360/M,Rr=176,s='<svg viewBox="-200 -200 400 400" role="img" aria-label="Ruota delle categorie"><circle r="194" fill="#f4f7ff"/><g id="rot" transform="rotate('+S.wheel+')">';
+  CATS.forEach(function(c,i){
+    var a0=i*seg,a1=(i+1)*seg,p0=P(a0,Rr),p1=P(a1,Rr),am=a0+seg/2,done=S.cat[i].asked>=c.qs.length;
+    s+='<path d="M0 0L'+p0[0].toFixed(2)+' '+p0[1].toFixed(2)+'A'+Rr+' '+Rr+' 0 '+(seg>180?1:0)+' 1 '+p1[0].toFixed(2)+' '+p1[1].toFixed(2)+'Z" fill="'+c.color+'" stroke="#f4f7ff" stroke-width="3" opacity="'+(done?.32:1)+'"/>';
+    var lp=P(am,112),rot=am<180?am-90:am+90;
+    s+='<text transform="translate('+lp[0].toFixed(2)+' '+lp[1].toFixed(2)+') rotate('+rot+')" text-anchor="middle" dominant-baseline="central" font-family="Big Shoulders Display,Arial Narrow,sans-serif" font-size="22" font-weight="800" letter-spacing="1" fill="'+c.ink+'" opacity="'+(done?.5:1)+'"'+(c.short.length>=10?' textLength="118" lengthAdjust="spacingAndGlyphs"':'')+'>'+esc(c.short.toUpperCase())+'</text>';
+  });
+  CATS.forEach(function(c,i){var q=P(i*seg,185);s+='<circle cx="'+q[0].toFixed(2)+'" cy="'+q[1].toFixed(2)+'" r="5.5" fill="#f2c75c" stroke="#b8902a" stroke-width="1.5"/>'});
+  s+='</g><circle r="26" fill="#f4f7ff" stroke="#c4cff0" stroke-width="3"/><circle r="9" fill="#f2c75c"/></svg>';
+  return s;
+}
+function showWheel(){
+  setScene("stazione");
+  var legend=CATS.map(function(c,i){
+    var pips="";for(var k=0;k<c.qs.length;k++)pips+='<i class="'+(k<S.cat[i].asked?"on":"")+'"></i>';
+    return '<li style="--bc:'+c.color+'"><span class="dot"></span><span class="nm">'+esc(c.name)+'</span><span class="pips" aria-label="'+S.cat[i].asked+' su '+c.qs.length+'">'+pips+'</span></li>';
+  }).join("");
+  view('<div class="wheelview"><div class="wheelbox">'+wheelSVG()+'<div class="ptr" id="ptr"></div></div>'+
+    '<div class="side"><div class="stamp">Gira la ruota</div><h2>Quale categoria uscirà?</h2><ul class="legend">'+legend+'</ul>'+
+    '<div class="row"><button class="btn" id="spin" type="button">Gira</button></div><div class="status" id="wmsg"></div></div></div>');
+  var raf=0;
+  var seg=360/CATS.length;
+  function sector(a){return Math.floor((((270-a)%360)+360)%360/seg)}
+  function spin(){
+    if(S.spinning)return;
+    var avail=[];CATS.forEach(function(c,i){if(S.cat[i].asked<c.qs.length)avail.push(i)});
+    if(!avail.length)return;
+    S.spinning=true;ac();$("#spin").disabled=true;$("#wmsg").textContent="";
+    var target=avail[Math.floor(Math.random()*avail.length)];
+    var jitter=(Math.random()-.5)*seg*.6;
+    var want=270-(target*seg+seg/2+jitter);
+    var cur=S.wheel;
+    var delta=((want-cur)%360+360)%360+360*(5+Math.floor(Math.random()*2));
+    var dur=4800,t0=performance.now(),last=sector(cur);
+    var rot=$("#rot"),ptr=$("#ptr");
+    function frame(now){
+      var t=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-t,4),a=cur+delta*e;
+      rot.setAttribute("transform","rotate("+a.toFixed(2)+")");
+      var sc=sector(a);
+      if(sc!==last){last=sc;sfxTick();try{ptr.animate([{transform:"rotate(-18deg)"},{transform:"rotate(0deg)"}],{duration:120})}catch(x){}}
+      if(t<1){raf=requestAnimationFrame(frame)}
+      else{
+        S.wheel=(cur+delta)%360;S.spinning=false;S.cur=target;
+        rot.setAttribute("transform","rotate("+S.wheel.toFixed(2)+")");
+        tone(523,.15,"triangle",.1);tone(784,.3,"triangle",.1,.12);
+        $("#wmsg").textContent=CATS[target].name;
+        setTimeout(function(){showBanner(target)},900);
+      }
+    }
+    raf=requestAnimationFrame(frame);
+  }
+  $("#spin").onclick=spin;
+  $("#ptr").onclick=spin;
+  function kd(e){if((e.key===" "||e.key==="Enter")&&document.activeElement.tagName!=="BUTTON"){e.preventDefault();spin()}}
+  document.addEventListener("keydown",kd);
+  cleanup=function(){cancelAnimationFrame(raf);S.spinning=false;document.removeEventListener("keydown",kd)};
+}
+
+function showBanner(ci){
+  var c=CATS[ci],ct=S.cat[ci];
+  view('<div class="banner" style="'+catStyle(c)+'"><span class="stamp">Domanda '+(ct.asked+1)+' di '+c.qs.length+'</span><h2>'+esc(c.name)+'</h2></div>');
+  var t=setTimeout(function(){showQuestion(ci)},1500);
+  stage.onclick=function(){clearTimeout(t);stage.onclick=null;showQuestion(ci)};
+  cleanup=function(){clearTimeout(t);stage.onclick=null};
+}
+
+function showQuestion(ci){
+  var c=CATS[ci],ct=S.cat[ci],q=ct.order[ct.asked];
+  setScene(q.luogo);
+  var opts=shuffle(q.o.map(function(t,i){return {t:t,c:i===q.a}}));
+  var L=["A","B","C","D"];
+  view('<div class="qhead"><span class="catchip" style="'+catStyle(c)+'">'+esc(c.name)+'</span><span class="stamp">Domanda '+(ct.asked+1)+' di '+c.qs.length+'</span></div>'+
+    '<div class="timerbar" aria-hidden="true"><i id="tbar"></i></div>'+
+    '<div class="qline"><div class="qpill" role="heading" aria-level="2">'+esc(q.q)+'</div></div>'+
+    '<div class="answers">'+opts.map(function(o,i){return '<button class="ans" type="button" data-i="'+i+'"><b>'+L[i]+':</b><span>'+esc(o.t)+'</span></button>'}).join('')+'</div>'+
+    '<div id="fb"></div>');
+  var start=performance.now(),raf=0,done=false,bar=$("#tbar");
+  function tick(){
+    var left=Math.max(0,1-(performance.now()-start)/QTIME);
+    bar.style.transform="scaleX("+left+")";
+    if(left<=0)finish(-1);else raf=requestAnimationFrame(tick);
+  }
+  raf=requestAnimationFrame(tick);
+  function finish(i){
+    if(done)return;done=true;cancelAnimationFrame(raf);
+    var left=Math.max(0,1-(performance.now()-start)/QTIME);
+    var ok=i>=0&&opts[i].c;
+    stage.querySelectorAll(".ans").forEach(function(b,k){b.disabled=true;if(opts[k].c)b.classList.add("right");else if(k===i)b.classList.add("wrong")});
+    var pts=ok?100+Math.round(50*left):0;
+    if(ok){S.correct++;ct.ok++;add(pts);sfxOk()}else sfxBad();
+    ct.asked++;
+    var last=ct.asked>=c.qs.length;
+    $("#fb").innerHTML='<div class="note '+(ok?"good":"bad")+'"><span class="pts">'+(ok?"+"+pts+" punti":(i<0?"Tempo scaduto":"Risposta sbagliata"))+'</span><br>'+esc(q.n)+'</div>'+
+      '<div class="row" style="margin-top:14px"><button class="btn" id="next" type="button">'+(last?"Bonus: "+esc(GAMES[c.game].title):"Gira ancora")+'</button></div>';
+    var nb=$("#next");nb.focus();
+    nb.onclick=function(){if(last)showGameIntro();else showWheel()};
+  }
+  stage.querySelectorAll(".ans").forEach(function(b){b.onclick=function(){finish(+b.dataset.i)}});
+  function key(e){
+    var k=({"1":0,"2":1,"3":2,"4":3,"a":0,"b":1,"c":2,"d":3})[e.key.toLowerCase()];
+    if(!done&&k!==undefined&&k<opts.length)finish(k);
+    else if(done&&(e.key==="Enter"||e.key===" ")&&document.activeElement.tagName!=="BUTTON"){var n=$("#next");if(n)n.click()}
+  }
+  document.addEventListener("keydown",key);
+  cleanup=function(){cancelAnimationFrame(raf);document.removeEventListener("keydown",key)};
+}
+
+/* ----- bonus ----- */
+var GAMES={
+ cards:{title:"Libro o film?",rules:"Ti mostro 8 frasi. Dimmi se valgono solo per il libro, solo per il film o per tutti e due.",run:gameCards},
+ train:{title:"Ferma il treno",rules:"Il treno corre lungo il binario. Premi Ferma, tocca il binario o usa la barra spaziatrice per fermarlo dentro la banchina. Sono 5 treni e la banchina si accorcia.",run:gameTrain},
+ shoes:{title:"Scarpe nuove",rules:"Amerigo sogna un paio di scarpe nuove. Muovi il dito, il mouse o le frecce per prendere le scarpe che cadono dalle finestre e schiva il fango. Hai 25 secondi.",run:gameShoes},
+ violin:{title:"Il violino",rules:"Ascolta la sequenza di note sulle corde del violino e ripetila nello stesso ordine. Ogni giro aggiunge una nota. Se sbagli, il concerto finisce.",run:gameViolin}
+};
+var SCENE_OF={cards:"stazione",train:"viaggio",shoes:"napoli",violin:"modena"};
+function showGameIntro(){
+  var c=CATS[S.cur],g=GAMES[c.game];setScene(SCENE_OF[c.game]);
+  view('<div class="stamp">Categoria completata · bonus fino a '+GMAX+' punti</div><h2>'+esc(g.title)+'</h2><p>'+esc(g.rules)+'</p><div class="row"><button class="btn" id="go" type="button">Via</button></div>',"panel");
+  $("#go").onclick=function(){ac();view('<div class="stamp">Bonus · '+esc(g.title)+'</div><div id="game" style="display:flex;flex-direction:column;gap:14px"></div>',"panel");g.run($("#game"),endGame)};
+}
+function endGame(score,msg){
+  score=Math.max(0,Math.min(GMAX,Math.round(score)));
+  add(score);S.cat[S.cur].bonus=score;
+  var fin=allDone();
+  view('<div class="stamp">Bonus concluso</div><h2>'+esc(msg)+'</h2><div class="pts" style="font-size:2rem">+'+score+' punti</div><div class="row"><button class="btn" id="next" type="button">'+(fin?"Vedi il risultato":"Torna alla ruota")+'</button></div>',"panel");
+  var n=$("#next");n.focus();n.onclick=function(){fin?showFinal():showWheel()};
+}
+
+/* ---------- bonus: scarpe ---------- */
+function gameShoes(root,done){
+  var W=360,H=480;
+  root.innerHTML='<div class="minihud"><span>Scarpe <b id="hs">0</b></span><span>Tempo <b id="ht">25</b></span><span>Fango <b id="hm">0</b></span></div><canvas id="cv" width="'+W+'" height="'+H+'" aria-label="Area di gioco"></canvas><div class="status">Muovi per prendere le scarpe</div>';
+  var cv=$("#cv"),cx=cv.getContext("2d");
+  var px=W/2,pw=78,py=H-70,items=[],shoes=0,mud=0,t0=performance.now(),last=t0,spawn=0,over=false,raf=0,left=false,right=false;
+  var wins=[];for(var i=0;i<14;i++)wins.push({x:(i%4)*90+18,y:30+Math.floor(i/4)*70,w:42,h:36,lit:Math.random()>.45});
+  function ptr(e){var r=cv.getBoundingClientRect();px=Math.max(pw/2,Math.min(W-pw/2,(e.clientX-r.left)/r.width*W))}
+  cv.addEventListener("pointermove",ptr);cv.addEventListener("pointerdown",ptr);
+  function kd(e){if(e.key==="ArrowLeft"){left=true;e.preventDefault()}if(e.key==="ArrowRight"){right=true;e.preventDefault()}}
+  function ku(e){if(e.key==="ArrowLeft")left=false;if(e.key==="ArrowRight")right=false}
+  document.addEventListener("keydown",kd);document.addEventListener("keyup",ku);
+  function drawShoe(x,y){
+    cx.fillStyle="#ffb41f";cx.beginPath();cx.moveTo(x-16,y-10);cx.lineTo(x+2,y-10);cx.lineTo(x+4,y);cx.lineTo(x+18,y+4);cx.lineTo(x+18,y+10);cx.lineTo(x-16,y+10);cx.closePath();cx.fill();
+    cx.fillStyle="#6b3d12";cx.fillRect(x-16,y+8,34,4);
+  }
+  function drawMud(x,y){cx.fillStyle="#5a3e24";cx.beginPath();cx.ellipse(x,y,15,11,0,0,7);cx.fill();cx.fillStyle="#3d2916";cx.beginPath();cx.ellipse(x-4,y-3,5,3,0,0,7);cx.fill()}
+  function frame(now){
+    var dt=Math.min(.05,(now-last)/1000);last=now;
+    var el=(now-t0)/1000,rem=Math.max(0,25-el);
+    if(left)px-=320*dt;if(right)px+=320*dt;px=Math.max(pw/2,Math.min(W-pw/2,px));
+    spawn-=dt;if(spawn<=0){spawn=Math.max(.38,.85-el*.02);items.push({x:20+Math.random()*(W-40),y:-20,v:130+Math.random()*90+el*3,m:Math.random()<.3})}
+    items.forEach(function(it){it.y+=it.v*dt});
+    items=items.filter(function(it){
+      if(it.y>py-8&&it.y<py+26&&Math.abs(it.x-px)<pw/2+8){if(it.m){mud++;sfxBad()}else{shoes++;tone(600+shoes*12,.09,"triangle",.07)}return false}
+      return it.y<H+30;
+    });
+    var g=cx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#1c3c82");g.addColorStop(1,"#0a1647");cx.fillStyle=g;cx.fillRect(0,0,W,H);
+    cx.fillStyle="#102a66";cx.fillRect(0,0,W,H-40);
+    wins.forEach(function(w){cx.fillStyle=w.lit?"#ffb41f":"#081238";cx.globalAlpha=w.lit?.75:1;cx.fillRect(w.x,w.y,w.w,w.h);cx.globalAlpha=1});
+    cx.strokeStyle="#8aa0d8";cx.lineWidth=1.5;cx.beginPath();cx.moveTo(0,22);cx.quadraticCurveTo(W/2,48,W,20);cx.stroke();
+    ["#e8503f","#e9f0eb","#5fa8f5","#e9f0eb"].forEach(function(c,i){var x=40+i*85;cx.fillStyle=c;cx.fillRect(x,34+Math.sin(i)*3,16,22)});
+    cx.fillStyle="#26408a";cx.fillRect(0,H-40,W,40);
+    items.forEach(function(it){it.m?drawMud(it.x,it.y):drawShoe(it.x,it.y)});
+    cx.fillStyle="#e0b58f";cx.beginPath();cx.arc(px,py-6,13,0,7);cx.fill();
+    cx.fillStyle="#3b2a1e";cx.fillRect(px-14,py-22,28,9);
+    cx.fillStyle="#5fa8f5";cx.fillRect(px-15,py+6,30,30);
+    cx.fillStyle="#7a5232";cx.beginPath();cx.moveTo(px-pw/2,py-2);cx.lineTo(px+pw/2,py-2);cx.lineTo(px+pw/2-10,py+22);cx.lineTo(px-pw/2+10,py+22);cx.closePath();cx.fill();
+    cx.fillStyle="#9c7046";cx.fillRect(px-pw/2,py-4,pw,5);
+    $("#hs").textContent=shoes;$("#ht").textContent=Math.ceil(rem);$("#hm").textContent=mud;
+    if(rem<=0){finishIt();return}
+    raf=requestAnimationFrame(frame);
+  }
+  function finishIt(){
+    if(over)return;over=true;
+    var sc=Math.max(0,shoes*25-mud*15);
+    done(sc,shoes+(shoes===1?" scarpa presa":" scarpe prese")+" e "+mud+(mud===1?" macchia di fango":" macchie di fango"));
+  }
+  raf=requestAnimationFrame(function(n){last=n;t0=n;frame(n)});
+  cleanup=function(){over=true;cancelAnimationFrame(raf);document.removeEventListener("keydown",kd);document.removeEventListener("keyup",ku)};
+}
+
+/* ---------- bonus: ferma il treno ---------- */
+function gameTrain(root,done){
+  var round=0,total=0,raf=0,stopped=false,t0=0,speed=0,zc=0,zw=0,lw=11,tm=0;
+  root.innerHTML='<div class="minihud"><span>Treno <b id="tr">1</b>/5</span><span>Punti <b id="tp">0</b></span></div>'+
+   '<div class="track" id="trk" role="button" tabindex="0" aria-label="Binario: tocca per fermare il treno"><div class="zone" id="zn"></div><div class="loco" id="lc"></div></div>'+
+   '<div class="status" id="st">Fermalo dentro la banchina</div><div class="row"><button class="btn" id="stop" type="button">Ferma</button></div>';
+  var lc=$("#lc"),zn=$("#zn"),trk=$("#trk");
+  function newRound(){
+    stopped=false;round++;$("#tr").textContent=round;
+    zw=Math.max(8,24-(round-1)*3.5);speed=.55+(round-1)*.2;
+    zc=24+Math.random()*52;
+    zn.style.left=(zc-zw/2)+"%";zn.style.width=zw+"%";
+    $("#st").textContent="Fermalo dentro la banchina";
+    t0=performance.now();raf=requestAnimationFrame(loop);
+  }
+  function posNow(now){var ph=((now-t0)/1000*speed)%2;return ph<1?ph:2-ph}
+  function loop(now){
+    if(stopped)return;
+    var p=posNow(now);lc.style.left=(p*(100-lw))+"%";lc.style.width=lw+"%";
+    raf=requestAnimationFrame(loop);
+  }
+  function stop(){
+    if(stopped)return;stopped=true;cancelAnimationFrame(raf);
+    var p=posNow(performance.now());var tc=p*(100-lw)+lw/2;var d=Math.abs(tc-zc);
+    var pts=0;
+    if(d<=zw/2){pts=40+Math.round(20*(1-d/(zw/2)));sfxOk();$("#st").textContent="In banchina! +"+pts}
+    else{sfxBad();$("#st").textContent="Fuori banchina, +0"}
+    total+=pts;$("#tp").textContent=total;
+    tm=setTimeout(function(){if(round>=5){done(total,total>=240?"Capostazione perfetto":total>=120?"Treni quasi in orario":"Un po’ di ritardo")}else newRound()},950);
+  }
+  $("#stop").onclick=stop;trk.addEventListener("pointerdown",stop);
+  function kd(e){if(e.key===" "){e.preventDefault();stop()}}
+  document.addEventListener("keydown",kd);
+  cleanup=function(){stopped=true;clearTimeout(tm);cancelAnimationFrame(raf);document.removeEventListener("keydown",kd)};
+  newRound();
+}
+
+/* ---------- bonus: violino ---------- */
+function gameViolin(root,done){
+  var N=[{n:"G",f:196,c:"#e8503f",l:"Sol"},{n:"D",f:293.66,c:"#ffb41f",l:"Re"},{n:"A",f:440,c:"#55c98a",l:"La"},{n:"E",f:659.25,c:"#5fa8f5",l:"Mi"}];
+  root.innerHTML='<div class="minihud"><span>Giro <b id="vr">1</b>/6</span><span>Note <b id="vn">2</b></span></div><div class="strings" id="strs">'+
+   N.map(function(x,i){return '<button class="string" type="button" data-i="'+i+'" style="--c:'+x.c+'"><span>'+x.n+'</span><small>'+x.l+'</small></button>'}).join('')+'</div><div class="status" id="vs"></div>';
+  var seq=[],pos=0,round=0,busy=true,timers=[],ended=false;
+  var btns=root.querySelectorAll(".string");
+  function T(fn,ms){var id=setTimeout(fn,ms);timers.push(id)}
+  function flash(i,ms){btns[i].classList.add("lit");T(function(){btns[i].classList.remove("lit")},ms||380)}
+  function play(i){tone(N[i].f,.55,"sawtooth",.09);tone(N[i].f*2,.4,"sine",.03)}
+  function nextRound(){
+    round++;seq.push(Math.floor(Math.random()*4));if(round===1)seq.push(Math.floor(Math.random()*4));
+    $("#vr").textContent=round;$("#vn").textContent=seq.length;
+    pos=0;busy=true;$("#vs").textContent="Ascolta";
+    seq.forEach(function(v,k){T(function(){flash(v,420);play(v)},800+k*650)});
+    T(function(){busy=false;$("#vs").textContent="Tocca a te"},800+seq.length*650);
+  }
+  function press(i){
+    if(busy||ended)return;
+    flash(i,260);play(i);
+    if(i!==seq[pos]){ended=true;busy=true;sfxBad();var got=round-1;T(function(){done(got*50,got>=6?"Concerto perfetto":got+(got===1?" giro":" giri")+" a memoria")},700);return}
+    pos++;
+    if(pos===seq.length){
+      busy=true;$("#vs").textContent="Giusto";
+      if(round>=6){ended=true;T(function(){sfxOk();done(300,"Concerto perfetto")},500)}else{sfxOk();T(nextRound,900)}
+    }
+  }
+  btns.forEach(function(b){b.addEventListener("pointerdown",function(e){e.preventDefault();press(+b.dataset.i)})});
+  function kd(e){var m=({"1":0,"2":1,"3":2,"4":3,"g":0,"d":1,"a":2,"e":3})[e.key.toLowerCase()];if(m!==undefined)press(m)}
+  document.addEventListener("keydown",kd);
+  cleanup=function(){ended=true;timers.forEach(clearTimeout);document.removeEventListener("keydown",kd)};
+  T(nextRound,400);
+}
+
+/* ---------- bonus: libro o film ---------- */
+function gameCards(root,done){
+  var deck=shuffle(CARDS),i=0,score=0,locked=false,t=null;
+  root.innerHTML='<div class="minihud"><span>Frase <b id="cn">1</b>/'+deck.length+'</span><span>Esatte <b id="cs">0</b></span></div><div class="card" id="cd"></div><div class="choices" id="chs">'+
+   CH.map(function(c,k){return '<button type="button" data-k="'+k+'">'+c+'</button>'}).join('')+'</div><div class="status" id="cm"></div>';
+  function show(){locked=false;$("#cn").textContent=i+1;var c=$("#cd");c.className="card";c.textContent=deck[i].t;$("#cm").textContent="";root.querySelectorAll(".choices button").forEach(function(b){b.disabled=false})}
+  function pick(k){
+    if(locked)return;locked=true;
+    var ok=k===deck[i].a,c=$("#cd");
+    root.querySelectorAll(".choices button").forEach(function(b){b.disabled=true});
+    if(ok){score++;sfxOk();c.classList.add("right");$("#cm").textContent="Esatto"}else{sfxBad();c.classList.add("wrong");$("#cm").textContent="Era: "+CH[deck[i].a]}
+    $("#cs").textContent=score;
+    t=setTimeout(function(){i++;if(i>=deck.length){done(Math.round(score*GMAX/deck.length),score+" su "+deck.length+" frasi esatte")}else show()},1300);
+  }
+  root.querySelectorAll(".choices button").forEach(function(b){b.onclick=function(){pick(+b.dataset.k)}});
+  cleanup=function(){clearTimeout(t)};
+  show();
+}
+
+/* ---------- finale ---------- */
+function showFinal(){
+  setScene("modena");
+  var pct=S.score/TOTALMAX;
+  var rank=pct>=.75?"Amerigo Speranza":pct>=.5?"Capotreno":pct>=.25?"Viaggiatore":"Senza biglietto";
+  var line=pct>=.75?"Hai preso ogni tappa come un vero scugnizzo del treno.":pct>=.5?"Il viaggio lo conosci bene. Il libro e il film ti aspettano per il resto.":pct>=.25?"Sei salito sul treno giusto. Leggi il libro e guarda il film per vedere dove arriva.":"Il treno è partito senza di te. Riprova, oppure comincia dal libro.";
+  var prev=parseInt(store("treno-amerigo-best")||"0",10)||0;
+  var newBest=S.score>prev;if(newBest)store("treno-amerigo-best",String(S.score));
+  var recap=CATS.map(function(c,i){return '<div style="'+catStyle(c)+'"><span class="dot"></span><span class="nm">'+esc(c.name)+'</span><span class="v">'+S.cat[i].ok+'/'+c.qs.length+' risposte · bonus '+S.cat[i].bonus+'</span></div>'}).join("");
+  view('<div class="stamp">Arrivo · Fine corsa</div><div class="rank">'+esc(rank)+'</div><div class="big">'+S.score+'</div>'+
+   '<div class="stats"><div><b>'+S.correct+' / '+TOTALQ+'</b>risposte esatte</div><div><b>'+Math.round(pct*100)+'%</b>del punteggio massimo</div><div><b>'+Math.max(prev,S.score)+'</b>record'+(newBest?' (nuovo)':'')+'</div></div>'+
+   '<div class="recap">'+recap+'</div>'+
+   '<p>'+esc(line)+' Come finisce il viaggio di Amerigo non lo diciamo qui.</p>'+
+   '<div class="row"><button class="btn" id="again" type="button">Rigioca</button><button class="btn ghost" id="cp" type="button">Copia risultato</button></div><div class="status" id="cpm"></div>'+credits("end"),"panel");
+  $("#again").onclick=function(){showIntro()};
+  $("#cp").onclick=function(){
+    var txt="Il Treno di Amerigo: "+S.score+" punti, "+S.correct+"/"+TOTALQ+" risposte esatte. Rango: "+rank+".";
+    var m=$("#cpm");
+    function fallback(){m.textContent=txt}
+    try{navigator.clipboard.writeText(txt).then(function(){m.textContent="Copiato"},fallback)}catch(e){fallback()}
+  };
+  for(var i=0;i<4;i++)tone([392,494,587,784][i],.3,"triangle",.08,i*.14);
+}
+
+showIntro();
+})();
+</script>
+
+</body></html>
